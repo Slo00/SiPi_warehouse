@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Warehouse API — Документация пользователя</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #1b1b1b;
+    color: #d4d4d4;
+    line-height: 1.7;
+  }
+  .topbar {
+    background: #111;
+    border-bottom: 1px solid #2e2e2e;
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    height: 52px;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .topbar-logo {
+    font-size: 16px; font-weight: 700; color: #fff;
+    margin-right: 32px;
+  }
+  .topbar-logo span { color: #e8c46a; }
+  .topbar-nav a {
+    color: #999; text-decoration: none; font-size: 14px;
+    margin-right: 24px;
+  }
+  .topbar-nav a:hover { color: #fff; }
+  .topbar-nav a.active { color: #e8c46a; }
+  .topbar-right {
+    margin-left: auto; font-size: 12px; color: #666;
+  }
+  .layout { display: flex; min-height: calc(100vh - 52px); }
+  .sidebar {
+    width: 240px; min-width: 240px;
+    background: #141414;
+    border-right: 1px solid #252525;
+    padding: 24px 0;
+    position: sticky; top: 52px;
+    height: calc(100vh - 52px);
+    overflow-y: auto;
+  }
+  .sidebar-section {
+    font-size: 11px; color: #666; padding: 12px 20px 4px;
+    text-transform: uppercase; letter-spacing: 1px; font-weight: 600;
+  }
+  .sidebar a {
+    display: block; padding: 6px 20px;
+    color: #aaa; text-decoration: none; font-size: 13px;
+    border-left: 2px solid transparent;
+  }
+  .sidebar a:hover { color: #fff; background: #1e1e1e; }
+  .sidebar a.active { color: #e8c46a; border-left-color: #e8c46a; background: #1e1e1e; }
+  .content { flex: 1; padding: 0; }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* Wiki page style */
+  .wiki-page {
+    max-width: 860px;
+    padding: 40px 48px;
+  }
+  .wiki-meta {
+    font-size: 12px; color: #666; margin-bottom: 20px;
+  }
+  .wiki-meta span { color: #e8c46a; }
+  h1.wiki-title {
+    font-size: 30px; font-weight: 700; color: #fff;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #2e2e2e;
+  }
+  h2.wiki-h2 {
+    font-size: 20px; font-weight: 600; color: #fff;
+    margin-top: 36px; margin-bottom: 14px;
+  }
+  h3.wiki-h3 {
+    font-size: 15px; font-weight: 600; color: #e8c46a;
+    margin-top: 24px; margin-bottom: 10px;
+  }
+  .wiki-text { font-size: 14px; color: #ccc; margin-bottom: 14px; }
+  .wiki-list { list-style: none; padding: 0; margin-bottom: 14px; }
+  .wiki-list li {
+    font-size: 14px; color: #ccc; padding: 4px 0 4px 20px;
+    position: relative;
+  }
+  .wiki-list li::before {
+    content: "•"; position: absolute; left: 6px; color: #e8c46a;
+  }
+  .wiki-list li b { color: #fff; }
+  ol.wiki-ol { list-style: decimal; padding-left: 24px; margin-bottom: 14px; }
+  ol.wiki-ol li { font-size: 14px; color: #ccc; padding: 4px 0; }
+  .code-block {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-family: "JetBrains Mono", "Fira Code", monospace;
+    font-size: 13px;
+    color: #e6edf3;
+    margin-bottom: 18px;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .code-inline {
+    background: #252525; border: 1px solid #333;
+    border-radius: 4px; padding: 1px 6px;
+    font-family: monospace; font-size: 13px; color: #e8c46a;
+  }
+  .info-box {
+    background: #1a2a3a; border: 1px solid #2a4a6a;
+    border-left: 4px solid #42a5f5;
+    border-radius: 6px; padding: 14px 18px;
+    margin-bottom: 18px; font-size: 13px; color: #aac4e0;
+  }
+  .warn-box {
+    background: #2a2a1a; border: 1px solid #4a4a2a;
+    border-left: 4px solid #ffc107;
+    border-radius: 6px; padding: 14px 18px;
+    margin-bottom: 18px; font-size: 13px; color: #d4c47a;
+  }
+  .endpoint-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px; }
+  .endpoint-table th {
+    text-align: left; padding: 10px 14px;
+    background: #1e1e1e; color: #888;
+    border-bottom: 1px solid #333; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .endpoint-table td {
+    padding: 10px 14px; border-bottom: 1px solid #252525; vertical-align: top;
+  }
+  .endpoint-table tr:hover td { background: #1e1e1e; }
+  .method {
+    display: inline-block; font-size: 11px; font-weight: 700;
+    padding: 2px 8px; border-radius: 4px; font-family: monospace;
+  }
+  .method-get { background: #1a3a2a; color: #4caf50; }
+  .method-post { background: #1a2a3a; color: #42a5f5; }
+  .method-put { background: #2a2a1a; color: #ffc107; }
+  .method-del { background: #3a1a1a; color: #ef5350; }
+  .auth-badge {
+    display: inline-block; font-size: 10px; padding: 1px 6px;
+    border-radius: 8px; background: #2a1a3a; color: #ab47bc;
+    vertical-align: middle; margin-left: 6px;
+  }
+  .url { color: #9cdcfe; font-family: monospace; }
+  .desc-cell { color: #aaa; }
+  .divider { border: none; border-top: 1px solid #252525; margin: 32px 0; }
+  .field-table { width: 100%; border-collapse: collapse; margin-bottom: 18px; font-size: 13px; }
+  .field-table th {
+    text-align: left; padding: 8px 12px;
+    background: #1a1a1a; color: #777; border-bottom: 1px solid #2e2e2e;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .field-table td { padding: 9px 12px; border-bottom: 1px solid #222; }
+  .field-name { color: #9cdcfe; font-family: monospace; }
+  .field-type { color: #4ec9b0; font-family: monospace; }
+  .field-req { color: #ef5350; font-size: 11px; }
+  .field-opt { color: #777; font-size: 11px; }
+  .json-block {
+    background: #0d1117; border: 1px solid #30363d; border-radius: 8px;
+    padding: 16px 20px; font-family: monospace; font-size: 13px;
+    margin-bottom: 18px; overflow-x: auto; white-space: pre;
+  }
+  .jk { color: #79c0ff; } /* json key */
+  .js { color: #a5d6ff; } /* json string value */
+  .jn { color: #79c0ff; } /* json number */
+  .jb { color: #ff7b72; } /* json bool */
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo">Warehouse<span> API</span></div>
+  <nav class="topbar-nav">
+    <a href="#" class="active" onclick="showPage('overview', this)">Обзор</a>
+    <a href="#" onclick="showPage('install', this)">Установка</a>
+    <a href="#" onclick="showPage('api', this)">API</a>
+    <a href="#" onclick="showPage('auth', this)">Аутентификация</a>
+    <a href="#" onclick="showPage('features', this)">Функции</a>
+    <a href="#" onclick="showPage('errors', this)">Ошибки</a>
+  </nav>
+  <div class="topbar-right">v1.0 · Go + Gin + PostgreSQL</div>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="sidebar-section">Начало работы</div>
+    <a href="#" class="active" onclick="showPage('overview', this)">Описание системы</a>
+    <a href="#" onclick="showPage('install', this)">Установка и требования</a>
+    <a href="#" onclick="showPage('auth', this)">Аутентификация</a>
+    <div class="sidebar-section">Справочник API</div>
+    <a href="#" onclick="showPage('api', this)">Все эндпоинты</a>
+    <a href="#" onclick="showPage('assortment', this)">Ассортимент</a>
+    <a href="#" onclick="showPage('stock', this)">Остатки</a>
+    <a href="#" onclick="showPage('suppliers', this)">Поставщики</a>
+    <a href="#" onclick="showPage('clients', this)">Клиенты</a>
+    <a href="#" onclick="showPage('dashboards', this)">Дашборды</a>
+    <a href="#" onclick="showPage('client-orders', this)">Заказы клиентов</a>
+    <a href="#" onclick="showPage('supplier-orders', this)">Заказы поставщикам</a>
+    <a href="#" onclick="showPage('promotions', this)">Акции</a>
+    <a href="#" onclick="showPage('returns', this)">Возвраты</a>
+    <div class="sidebar-section">Прочее</div>
+    <a href="#" onclick="showPage('features', this)">Основные функции</a>
+    <a href="#" onclick="showPage('errors', this)">Коды ошибок</a>
+  </div>
+
+  <div class="content">
+
+    <!-- OVERVIEW -->
+    <div id="page-overview" class="page active">
+      <div class="wiki-page">
+        <div class="wiki-meta">Описание системы · <span>Warehouse API</span></div>
+        <h1 class="wiki-title">Описание системы</h1>
+        <p class="wiki-text">
+          <b style="color:#fff">Warehouse API</b> — серверная часть системы управления складом.
+          Предоставляет REST API для учёта товаров, управления заказами клиентов и поставщиков,
+          контроля остатков, ведения акций и оформления возвратов.
+        </p>
+        <p class="wiki-text">
+          Сервер реализован на языке <b style="color:#fff">Go</b> с использованием фреймворка <b style="color:#fff">Gin</b>.
+          В качестве базы данных используется <b style="color:#fff">PostgreSQL</b>.
+          Все запросы к защищённым ресурсам требуют аутентификации через <b style="color:#fff">JWT-токен</b>.
+        </p>
+        <div class="info-box">
+          Все запросы и ответы передаются в формате <b>JSON</b>.
+          Базовый URL сервера: <code class="code-inline">http://localhost:8080</code>
+        </div>
+        <h2 class="wiki-h2">Возможности системы</h2>
+        <ul class="wiki-list">
+          <li><b>Ассортимент</b> — ведение справочника товаров с ценами и артикулами</li>
+          <li><b>Остатки на складе</b> — учёт количества товаров и дата последнего обновления</li>
+          <li><b>Заказы клиентов</b> — приём, обновление и отмена заказов с позициями</li>
+          <li><b>Заказы поставщикам</b> — формирование закупок и учёт поступления товаров</li>
+          <li><b>Акции</b> — управление скидками и специальными ценами на товары</li>
+          <li><b>Возвраты</b> — оформление возвратов с привязкой к исходному заказу</li>
+          <li><b>Аутентификация</b> — регистрация, вход, ролевая система (employee / manager / admin)</li>
+        </ul>
+
+        <h2 class="wiki-h2">Архитектура</h2>
+        <p class="wiki-text">Проект разделён на независимые пакеты:</p>
+        <ul class="wiki-list">
+          <li><b>config</b> — загрузка конфигурации из .env</li>
+          <li><b>db</b> — пул соединений с PostgreSQL (pgx/v5)</li>
+          <li><b>middleware</b> — JWT-аутентификация</li>
+          <li><b>models</b> — структуры данных всех сущностей</li>
+          <li><b>handlers</b> — HTTP-обработчики эндпоинтов</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- INSTALL -->
+    <div id="page-install" class="page">
+      <div class="wiki-page">
+        <div class="wiki-meta">Начало работы · <span>Установка и требования</span></div>
+        <h1 class="wiki-title">Установка и требования</h1>
+
+        <h2 class="wiki-h2">Требования</h2>
+        <ul class="wiki-list">
+          <li><b>Go</b> 1.21 или выше</li>
+          <li><b>PostgreSQL</b> 14 или выше</li>
+          <li><b>Docker</b> (опционально, для запуска БД)</li>
+        </ul>
+
+        <h2 class="wiki-h2">1. Запуск базы данных</h2>
+        <p class="wiki-text">Запустите PostgreSQL через Docker:</p>
+        <div class="code-block">docker run -d \
+  --name warehouse-db \
+  -e POSTGRES_USER=warehouse \
+  -e POSTGRES_PASSWORD=secretpassword \
+  -e POSTGRES_DB=warehouse_db \
+  -p 5432:5432 \
+  postgres:16</div>
+        <p class="wiki-text">Примените схему базы данных:</p>
+        <div class="code-block">docker exec -i warehouse-db psql -U warehouse -d warehouse_db &lt; schema.sql</div>
+
+        <h2 class="wiki-h2">2. Настройка</h2>
+        <p class="wiki-text">Создайте файл <code class="code-inline">.env</code> в корне проекта:</p>
+        <div class="code-block">DB_URL=postgres://warehouse:secretpassword@localhost:5432/warehouse_db
+JWT_SECRET=your-secret-key-here
+PORT=8080</div>
+
+        <h2 class="wiki-h2">3. Запуск сервера</h2>
+        <div class="code-block">go mod download
+go run main.go</div>
+        <p class="wiki-text">Сервер запустится на <code class="code-inline">http://localhost:8080</code></p>
+
+        <h2 class="wiki-h2">4. Проверка</h2>
+        <div class="code-block">curl http://localhost:8080/api/health
+# {"status":"ok"}</div>
+
+        <div class="warn-box">
+          При первом запуске в базе создаётся тестовый администратор:<br>
+          Email: <b>admin@warehouse.local</b> · Пароль: <b>admin123</b>
+        </div>
+      </div>
+    </div>
+
+    <!-- AUTH -->
+    <div id="page-auth" class="page">
+      <div class="wiki-page">
+        <div class="wiki-meta">Начало работы · <span>Аутентификация</span></div>
+        <h1 class="wiki-title">Аутентификация</h1>
+        <p class="wiki-text">
+          API использует <b style="color:#fff">JWT (JSON Web Token)</b>. При входе или регистрации сервер возвращает токен,
+          который нужно передавать в заголовке каждого защищённого запроса.
+        </p>
+
+        <h2 class="wiki-h2">Регистрация</h2>
+        <div class="code-block">POST /api/auth/register
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "secret123",
+  "first_name": "Иван",
+  "last_name": "Иванов",
+  "phone": "+7 (900) 000-00-00",
+  "role": "procurement_specialist"
+}</div>
+        <p class="wiki-text">Ответ:</p>
+        <div class="json-block">{
+  <span class="jk">"token"</span>: <span class="js">"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."</span>,
+  <span class="jk">"user"</span>: {
+    <span class="jk">"id"</span>: <span class="jn">5</span>,
+    <span class="jk">"email"</span>: <span class="js">"user@example.com"</span>,
+    <span class="jk">"first_name"</span>: <span class="js">"Иван"</span>,
+    <span class="jk">"last_name"</span>: <span class="js">"Иванов"</span>,
+    <span class="jk">"role"</span>: <span class="js">"procurement_specialist"</span>
+  }
+}</div>
+
+        <h2 class="wiki-h2">Вход</h2>
+        <div class="code-block">POST /api/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "secret123"
+}</div>
+
+        <h2 class="wiki-h2">Использование токена</h2>
+        <p class="wiki-text">Добавьте токен в заголовок всех последующих запросов:</p>
+        <div class="code-block">GET /api/assortment
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</div>
+
+        <h2 class="wiki-h2">Роли пользователей</h2>
+        <table class="field-table">
+          <tr><th>Роль</th><th>Описание</th><th>Дашборд</th></tr>
+          <tr><td class="field-name">procurement_specialist</td><td class="desc-cell">Специалист по закупкам. Управляет ассортиментом, заказами поставщикам, остатками.</td><td class="desc-cell">/dashboard/procurement</td></tr>
+          <tr><td class="field-name">client_manager</td><td class="desc-cell">Менеджер по работе с клиентами. Обрабатывает заказы клиентов, управляет акциями.</td><td class="desc-cell">/dashboard/manager</td></tr>
+          <tr><td class="field-name">warehouse_keeper</td><td class="desc-cell">Кладовщик. Контролирует остатки, принимает поставки, собирает заказы.</td><td class="desc-cell">/dashboard/warehouse</td></tr>
+          <tr><td class="field-name">admin</td><td class="desc-cell">Администратор. Полный доступ ко всем операциям.</td><td class="desc-cell">/dashboard/procurement</td></tr>
+        </table>
+
+        <h2 class="wiki-h2">Тестовые аккаунты</h2>
+        <table class="field-table">
+          <tr><th>Email</th><th>Пароль</th><th>Роль</th></tr>
+          <tr><td class="field-name">admin@warehouse.local</td><td class="desc-cell">admin123</td><td class="desc-cell">admin</td></tr>
+          <tr><td class="field-name">procurement@warehouse.local</td><td class="desc-cell">test123</td><td class="desc-cell">procurement_specialist</td></tr>
+          <tr><td class="field-name">manager@warehouse.local</td><td class="desc-cell">test123</td><td class="desc-cell">client_manager</td></tr>
+          <tr><td class="field-name">warehouse@warehouse.local</td><td class="desc-cell">test123</td><td class="desc-cell">warehouse_keeper</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- ALL ENDPOINTS -->
+    <div id="page-api" class="page">
+      <div class="wiki-page">
+        <div class="wiki-meta">Справочник API · <span>Все эндпоинты</span></div>
+        <h1 class="wiki-title">Все эндпоинты</h1>
+        <div class="info-box">
+          Все эндпоинты, кроме <code>/api/auth/*</code> и <code>/api/health</code>,
+          требуют заголовок <span class="auth-badge">JWT</span> <code>Authorization: Bearer &lt;token&gt;</code>
+        </div>
+
+        <h3 class="wiki-h3">Аутентификация</h3>
+        <table class="endpoint-table">
+          <tr><th>Метод</th><th>URL</th><th>Описание</th></tr>
+          <tr><td><span class="method method-post">POST</span></td><td class="url">/api/auth/register</td><td class="desc-cell">Регистрация нового пользователя</td></tr>
+          <tr><td><span class="method method-post">POST</span></td><td class="url">/api/auth/login</td><td class="desc-cell">Вход в систему</td></tr>
+        </table>
+
+        <h3 class="wiki-h3">Дашборды (по ролям)</h3>
+        <table class="endpoint-table">
+          <tr><th>Метод</th><th>URL</th><th>Описание</th></tr>
+          <tr><td><span class="method method-get">GET</span></td><td class="url">/api/dashboard/procurement</td><td class="desc-cell">Дашборд специалиста по закупкам</td></tr>
+          <tr><td><span class="method method-get">GET</span></td><td class="url">/api/dashboard/manager</td><td class="desc-cell">Дашборд менеджера по клиентам</td></tr>
+          <tr><td><span class="method method-get">GET</span></td><td class="url">/api/dashboard/warehouse</td><td class="desc-cell">Дашборд кладовщика</td></tr>
+        </table>
+
+        <h3 class="wiki-h3">Поставщики</h3>
+        <table class="endpoint-table">
+          <tr><th>Метод</th><th>URL</th><th>Описание</th></tr>
+          <tr><td><span class="method method-get">GET</span></td><td class="url">/api/suppliers</td><td class="desc-cell">Список поставщиков</td></tr>
+          <tr><td><span class="method method-get">GET</span></td><td class="url">/api/suppliers/:id</td><td class="desc-cell">Один поставщик по ID</td></tr>
+          <tr><td><span class="method method-post">POST</span></td><td class="url">/api/suppliers</td><td class="desc-cell">Создать поставщика</td></tr>
+          <tr><td><span class="method method-put">PUT</span></td><td class="url">/api/suppliers/:id</td><td class="desc-cell">Обновить поставщика</td></tr>
+          <tr><td><span class="method method-del">DELETE</span></td><td class="url">/api/suppliers/:id</td><td class="desc-cell">Удалить поставщика</td></tr>
+        </table>
+
+        <h3 class="wiki-h3">Клиенты</h3>
+        <table class="endpoint-table">
+          <tr><th>Метод</th><th>URL</th><th>Описание</th></tr>
+          <tr><td><span class="method method-get">GET</span></td><td class="url">/api/clients</td><td class="desc-cell">Список клиентов (?search=)</td></tr>
+          <tr><td><span class="method method-get">GET</span></td><td class="url">/api/clients/:id</td><td class="desc-cell">Один клиент по ID</td></tr>
+          <tr><td><span class="method method-post">POST</span></td><td class="url">/api/clients</td><td class="desc-cell">Создать клиента</td></tr>
+          <tr><td><span class="method method-put">PUT</span></td><td class="url">/api/clients/:id</td><td class="desc-cell">Обновить клиента</td></tr>
+          <tr><td><span class="method method-del">DELETE</span></td><td class="url">/api/clients/:id</td><td class="desc-cell">Удалить клиента</td></tr>
+        </table>
+
+        <h3 class="wiki-h3">Ассортимент</h3>
+        <table class="endpoint-table">
+          <tr><th>Метод</th><th>URL</th><th>Описание</th></tr>
+          <tr><td><span class="method method-get">GET</span></td><td class="url">/api/assortment</td><td class="desc-cell">Список товаров (?filter=expiring|low_stock|expired &amp;category=)</td></tr>
+          <tr><td><span class="method method-get">GET</span></td><td class="url">/api/assortment/:id</td><td class="desc-cell">Один товар по ID</td></tr>
+          <tr><td><span class="method method-get">GET</span></td><td class="url">/api/assortment/:id/sales-chart</td><td class="desc-cell">График продаж за 6 месяцев</td></tr>
+          <tr><td><span class="method method-post">POST</span></td><td class="url">/api/assortment</td><td class="desc-cell">Создать товар</td></tr>
+          <tr><td><span class="method method-put">PUT</span></td><td class="url">/api/assortment/:id</td><td class="desc-cell">Обновить товар</td></tr>
+          <tr><td><span class="method method-del">DELETE</span></td><td class="url">/api/assortment/:id</td><td class="desc-cell">Удалить товар</td></tr>
+        </table>
+
+        <h3 class="wiki-h3">Остатки на складе</h3>
+        <table class="endpoint-table">
+          <tr><th>Метод</th><th>URL</th><th>Описание</th></tr>
+          <tr><td><span class="method method-get">GET</span></td><td class="url">/api/stock</td><td class="desc-cell">Список остатков (?filter=expiring|expired &amp;category=)</td></tr>
+          <tr><td><span class="method method-get">GET</span></td><td class="url">/api/stock/forecast</td><td class="desc-cell">Прогноз спроса и рекомендации по закупкам</td></tr>
+          <tr><td><span class="method method-post">POST</span></td><td class="url">/api/stock</td><td class="desc-cell">Создать запись об остатке</td></tr>
+          <tr><td><span class="method method-put">PUT</span></td><td class="url">/api/stock/:id</td><td class="desc-cell">Обновить количество</td></tr>
+        </table>
+
+        <h3 class="wiki-h3">Заказы клиентов</h3>
+        <table class="endpoint-table">
+          <tr><th>Метод</th><th>URL</th><th>Описание</th></tr>
+          <tr><td><span class="method method-get">GET</span></td><td class="url">/api/client-orders</td><td class="desc-cell">Список заказов (?status=new|confirmed|processing|completed|cancelled)</td></tr>
+          <tr><td><span class="method method-get">GET</span></td><td class="url">/api/client-orders/:id</td><td class="desc-cell">Один заказ по ID</td></tr>
+          <tr><td><span class="method method-post">POST</span></td><td class="url">/api/client-orders</td><td class="desc-cell">Создать заказ</td></tr>
+          <tr><td><span class="method method-put">PUT</span></td><td class="url">/api/client-orders/:id</td><td class="desc-cell">Обновить заказ</td></tr>
+          <tr><td><span class="method method-del">DELETE</span></td><td class="url">/api/client-orders/:id</td><td class="desc-cell">Удалить заказ</td></tr>
+          <tr><td><span class="method method-post">POST</span></td><td class="url">/api/client-orders/:id/confirm</td><td class="desc-cell">Подтвердить заказ (new → confirmed)</td></tr>
+          <tr><td><span class="method method-post">POST</span></td><td class="url">/api/client-orders/:id/reject</td><td class="desc-cell">Отклонить заказ (→ cancelled)</td></tr>
+          <tr><td><span class="method method-get">GET</span></td><td class="url">/api/client-order-items</td><td class="desc-cell">Позиции заказа (?order_id=N)</td></tr>
+          <tr><td><span class="method method-post">POST</span></td><td class="url">/api/client-order-items</td><td class="desc-cell">Добавить позицию в заказ</td></tr>
+        </table>
+
+        <h3 class="wiki-h3">Заказы поставщикам</h3>
+        <table class="endpoint-table">
+          <tr><th>Метод</th><th>URL</th><th>Описание</th></tr>
+          <tr><td><span class="method method-get">GET</span></td><td class="url">/api/supplier-orders</td><td class="desc-cell">Список заказов (?status= &amp;supplier_id=)</td></tr>
+          <tr><td><span class="method method-get">GET</span></td><td class="url">/api/supplier-orders/:id</td><td class="desc-cell">Один заказ по ID</td></tr>
+          <tr><td><span class="method method-post">POST</span></td><td class="url">/api/supplier-orders</td><td class="desc-cell">Создать заказ поставщику</td></tr>
+          <tr><td><span class="method method-put">PUT</span></td><td class="url">/api/supplier-orders/:id</td><td class="desc-cell">Обновить заказ</td></tr>
+          <tr><td><span class="method method-del">DELETE</span></td><td class="url">/api/supplier-orders/:id</td><td class="desc-cell">Удалить заказ</td></tr>
+          <tr><td><span class="method method-get">GET</span></td><td class="url">/api/supplier-order-items</td><td class="desc-cell">Позиции заказа (?order_id=N)</td></tr>
+          <tr><td><span class="method method-post">POST</span></td><td class="url">/api/supplier-order-items</td><td class="desc-cell">Добавить позицию</td></tr>
+        </table>
+
+        <h3 class="wiki-h3">Акции</h3>
+        <table class="endpoint-table">
+          <tr><th>Метод</th><th>URL</th><th>Описание</th></tr>
+          <tr><td><span class="method method-get">GET</span></td><td class="url">/api/promotions</td><td class="desc-cell">Список акций (?status=active|inactive|expired)</td></tr>
+          <tr><td><span class="method method-get">GET</span></td><td class="url">/api/promotions/suggestions</td><td class="desc-cell">Предложения акций по истекающим товарам</td></tr>
+          <tr><td><span class="method method-get">GET</span></td><td class="url">/api/promotions/:id</td><td class="desc-cell">Одна акция по ID</td></tr>
+          <tr><td><span class="method method-get">GET</span></td><td class="url">/api/promotions/:id/stats</td><td class="desc-cell">Статистика акции (заказы, выручка)</td></tr>
+          <tr><td><span class="method method-post">POST</span></td><td class="url">/api/promotions</td><td class="desc-cell">Создать акцию</td></tr>
+          <tr><td><span class="method method-put">PUT</span></td><td class="url">/api/promotions/:id</td><td class="desc-cell">Обновить акцию</td></tr>
+          <tr><td><span class="method method-del">DELETE</span></td><td class="url">/api/promotions/:id</td><td class="desc-cell">Удалить акцию</td></tr>
+          <tr><td><span class="method method-get">GET</span></td><td class="url">/api/promotion-items</td><td class="desc-cell">Товары в акции (?promotion_id=N)</td></tr>
+          <tr><td><span class="method method-post">POST</span></td><td class="url">/api/promotion-items</td><td class="desc-cell">Добавить товар в акцию</td></tr>
+        </table>
+
+        <h3 class="wiki-h3">Возвраты</h3>
+        <table class="endpoint-table">
+          <tr><th>Метод</th><th>URL</th><th>Описание</th></tr>
+          <tr><td><span class="method method-get">GET</span></td><td class="url">/api/returns</td><td class="desc-cell">Список возвратов</td></tr>
+          <tr><td><span class="method method-post">POST</span></td><td class="url">/api/returns</td><td class="desc-cell">Создать возврат</td></tr>
+          <tr><td><span class="method method-put">PUT</span></td><td class="url">/api/returns/:id</td><td class="desc-cell">Обновить возврат</td></tr>
+          <tr><td><span class="method method-del">DELETE</span></td><td class="url">/api/returns/:id</td><td class="desc-cell">Удалить возврат</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- DASHBOARDS -->
+    <div id="page-dashboards" class="page">
+      <div class="wiki-page">
+        <div class="wiki-meta">Справочник API · <span>Дашборды</span></div>
+        <h1 class="wiki-title">Дашборды по ролям</h1>
+        <p class="wiki-text">Каждая роль получает свой дашборд с актуальными данными, сгруппированными по зоне ответственности.</p>
+
+        <h2 class="wiki-h2">Специалист по закупкам — <code class="code-inline">GET /api/dashboard/procurement</code></h2>
+        <table class="field-table">
+          <tr><th>Поле ответа</th><th>Описание</th></tr>
+          <tr><td class="field-name">expiring_products</td><td class="desc-cell">Товары с истекающим сроком годности (≤3 дней)</td></tr>
+          <tr><td class="field-name">low_stock_products</td><td class="desc-cell">Товары с остатком ≤ минимального уровня</td></tr>
+          <tr><td class="field-name">recommended_orders</td><td class="desc-cell">Рекомендации к закупке на основе средних продаж за 3 месяца</td></tr>
+        </table>
+
+        <h2 class="wiki-h2">Менеджер по клиентам — <code class="code-inline">GET /api/dashboard/manager</code></h2>
+        <table class="field-table">
+          <tr><th>Поле ответа</th><th>Описание</th></tr>
+          <tr><td class="field-name">pending_orders</td><td class="desc-cell">Заказы клиентов со статусом <code class="code-inline">new</code>, ожидающие подтверждения</td></tr>
+          <tr><td class="field-name">expiring_promo_items</td><td class="desc-cell">Товары с истекающим сроком (≤14 дней), пригодные для акций</td></tr>
+        </table>
+
+        <h2 class="wiki-h2">Кладовщик — <code class="code-inline">GET /api/dashboard/warehouse</code></h2>
+        <table class="field-table">
+          <tr><th>Поле ответа</th><th>Описание</th></tr>
+          <tr><td class="field-name">expected_deliveries</td><td class="desc-cell">Заказы поставщикам с ожидаемой датой доставки (не завершённые)</td></tr>
+          <tr><td class="field-name">orders_ready_to_pick</td><td class="desc-cell">Заказы клиентов со статусом <code class="code-inline">confirmed</code>, готовые к сборке</td></tr>
+          <tr><td class="field-name">expired_products</td><td class="desc-cell">Товары с истёкшим сроком годности</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- SUPPLIERS -->
+    <div id="page-suppliers" class="page">
+      <div class="wiki-page">
+        <div class="wiki-meta">Справочник API · <span>Поставщики</span></div>
+        <h1 class="wiki-title">Поставщики</h1>
+        <p class="wiki-text">Справочник поставщиков склада. Используется при создании заказов поставщикам.</p>
+
+        <h2 class="wiki-h2">Поля объекта</h2>
+        <table class="field-table">
+          <tr><th>Поле</th><th>Тип</th><th>Обязательное</th><th>Описание</th></tr>
+          <tr><td class="field-name">id</td><td class="field-type">integer</td><td class="field-opt">авто</td><td class="desc-cell">Уникальный идентификатор</td></tr>
+          <tr><td class="field-name">name</td><td class="field-type">string</td><td class="field-req">да</td><td class="desc-cell">Название поставщика</td></tr>
+          <tr><td class="field-name">contact_info</td><td class="field-type">string</td><td class="field-opt">нет</td><td class="desc-cell">Контактное лицо</td></tr>
+          <tr><td class="field-name">phone</td><td class="field-type">string</td><td class="field-opt">нет</td><td class="desc-cell">Телефон</td></tr>
+          <tr><td class="field-name">email</td><td class="field-type">string</td><td class="field-opt">нет</td><td class="desc-cell">Email</td></tr>
+        </table>
+
+        <h2 class="wiki-h2">Пример создания</h2>
+        <div class="code-block">POST /api/suppliers
+Authorization: Bearer &lt;token&gt;
+Content-Type: application/json
+
+{
+  "name": "ООО Снабжение Плюс",
+  "contact_info": "Иванов Пётр",
+  "phone": "+7 (495) 000-00-00",
+  "email": "supply@example.com"
+}</div>
+      </div>
+    </div>
+
+    <!-- CLIENTS -->
+    <div id="page-clients" class="page">
+      <div class="wiki-page">
+        <div class="wiki-meta">Справочник API · <span>Клиенты</span></div>
+        <h1 class="wiki-title">Клиенты</h1>
+        <p class="wiki-text">Справочник клиентов. Привязывается к заказам клиентов. Поддерживает поиск по имени и компании.</p>
+
+        <h2 class="wiki-h2">Поля объекта</h2>
+        <table class="field-table">
+          <tr><th>Поле</th><th>Тип</th><th>Обязательное</th><th>Описание</th></tr>
+          <tr><td class="field-name">id</td><td class="field-type">integer</td><td class="field-opt">авто</td><td class="desc-cell">Уникальный идентификатор</td></tr>
+          <tr><td class="field-name">name</td><td class="field-type">string</td><td class="field-req">да</td><td class="desc-cell">Имя / ФИО клиента</td></tr>
+          <tr><td class="field-name">phone</td><td class="field-type">string</td><td class="field-opt">нет</td><td class="desc-cell">Телефон</td></tr>
+          <tr><td class="field-name">email</td><td class="field-type">string</td><td class="field-opt">нет</td><td class="desc-cell">Email</td></tr>
+          <tr><td class="field-name">company</td><td class="field-type">string</td><td class="field-opt">нет</td><td class="desc-cell">Компания</td></tr>
+        </table>
+
+        <h2 class="wiki-h2">Поиск клиентов</h2>
+        <div class="code-block">GET /api/clients?search=Иванов
+Authorization: Bearer &lt;token&gt;</div>
+        <p class="wiki-text">Поиск работает по полям <code class="code-inline">name</code> и <code class="code-inline">company</code> без учёта регистра.</p>
+      </div>
+    </div>
+
+    <!-- ASSORTMENT -->
+    <div id="page-assortment" class="page">
+      <div class="wiki-page">
+        <div class="wiki-meta">Справочник API · <span>Ассортимент</span></div>
+        <h1 class="wiki-title">Ассортимент</h1>
+        <p class="wiki-text">Ассортимент — справочник товаров склада. Каждый товар имеет название, цену, категорию и уникальный артикул. При запросе списка автоматически подтягиваются данные об остатках.</p>
+
+        <h2 class="wiki-h2">Поля объекта</h2>
+        <table class="field-table">
+          <tr><th>Поле</th><th>Тип</th><th>Обязательное</th><th>Описание</th></tr>
+          <tr><td class="field-name">id</td><td class="field-type">integer</td><td class="field-opt">авто</td><td class="desc-cell">Уникальный идентификатор</td></tr>
+          <tr><td class="field-name">name</td><td class="field-type">string</td><td class="field-req">да</td><td class="desc-cell">Название товара</td></tr>
+          <tr><td class="field-name">price</td><td class="field-type">float</td><td class="field-req">да</td><td class="desc-cell">Цена товара</td></tr>
+          <tr><td class="field-name">category</td><td class="field-type">string</td><td class="field-opt">нет</td><td class="desc-cell">Категория товара</td></tr>
+          <tr><td class="field-name">article</td><td class="field-type">string</td><td class="field-opt">нет</td><td class="desc-cell">Артикул (уникальный)</td></tr>
+          <tr><td class="field-name">expiry_date</td><td class="field-type">date?</td><td class="field-opt">нет</td><td class="desc-cell">Срок годности (YYYY-MM-DD)</td></tr>
+          <tr><td class="field-name">description</td><td class="field-type">string</td><td class="field-opt">нет</td><td class="desc-cell">Описание товара</td></tr>
+          <tr><td class="field-name">min_stock_level</td><td class="field-type">integer</td><td class="field-opt">нет</td><td class="desc-cell">Минимальный допустимый остаток</td></tr>
+          <tr><td class="field-name">total_quantity</td><td class="field-type">integer?</td><td class="field-opt">только GET</td><td class="desc-cell">Остаток на складе</td></tr>
+        </table>
+
+        <h2 class="wiki-h2">Фильтрация</h2>
+        <table class="field-table">
+          <tr><th>Параметр</th><th>Значение</th><th>Описание</th></tr>
+          <tr><td class="field-name">filter</td><td class="field-type">expiring</td><td class="desc-cell">Товары с истекающим сроком (≤3 дней)</td></tr>
+          <tr><td class="field-name">filter</td><td class="field-type">low_stock</td><td class="desc-cell">Товары с остатком ≤ min_stock_level</td></tr>
+          <tr><td class="field-name">filter</td><td class="field-type">expired</td><td class="desc-cell">Товары с истёкшим сроком годности</td></tr>
+          <tr><td class="field-name">category</td><td class="field-type">string</td><td class="desc-cell">Фильтр по категории</td></tr>
+        </table>
+
+        <h2 class="wiki-h2">Пример запроса</h2>
+        <div class="code-block">POST /api/assortment
+Authorization: Bearer &lt;token&gt;
+Content-Type: application/json
+
+{
+  "name": "Монитор Dell 27\"",
+  "price": 32000.00,
+  "category": "Электроника",
+  "article": "DEL-27-001"
+}</div>
+        <p class="wiki-text">Ответ <code class="code-inline">201 Created</code>:</p>
+        <div class="json-block">{
+  <span class="jk">"id"</span>: <span class="jn">4</span>,
+  <span class="jk">"name"</span>: <span class="js">"Монитор Dell 27\""</span>,
+  <span class="jk">"price"</span>: <span class="jn">32000</span>,
+  <span class="jk">"category"</span>: <span class="js">"Электроника"</span>,
+  <span class="jk">"article"</span>: <span class="js">"DEL-27-001"</span>
+}</div>
+      </div>
+    </div>
+
+    <!-- STOCK -->
+    <div id="page-stock" class="page">
+      <div class="wiki-page">
+        <div class="wiki-meta">Справочник API · <span>Остатки на складе</span></div>
+        <h1 class="wiki-title">Остатки на складе</h1>
+        <p class="wiki-text">Учёт количества каждого товара на складе. Запись об остатке привязана к конкретной позиции ассортимента.</p>
+
+        <h2 class="wiki-h2">Поля объекта</h2>
+        <table class="field-table">
+          <tr><th>Поле</th><th>Тип</th><th>Описание</th></tr>
+          <tr><td class="field-name">id</td><td class="field-type">integer</td><td class="desc-cell">Идентификатор записи</td></tr>
+          <tr><td class="field-name">total_quantity</td><td class="field-type">integer</td><td class="desc-cell">Количество товара на складе</td></tr>
+          <tr><td class="field-name">last_updated</td><td class="field-type">datetime</td><td class="desc-cell">Дата последнего обновления</td></tr>
+          <tr><td class="field-name">assortment_id</td><td class="field-type">integer</td><td class="desc-cell">Ссылка на товар</td></tr>
+          <tr><td class="field-name">product_name</td><td class="field-type">string</td><td class="desc-cell">Название товара (только GET)</td></tr>
+          <tr><td class="field-name">product_article</td><td class="field-type">string</td><td class="desc-cell">Артикул товара (только GET)</td></tr>
+        </table>
+
+        <h2 class="wiki-h2">Обновление остатка</h2>
+        <div class="code-block">PUT /api/stock/1
+Authorization: Bearer &lt;token&gt;
+Content-Type: application/json
+
+{
+  "total_quantity": 50,
+  "assortment_id": 1
+}</div>
+      </div>
+    </div>
+
+    <!-- CLIENT ORDERS -->
+    <div id="page-client-orders" class="page">
+      <div class="wiki-page">
+        <div class="wiki-meta">Справочник API · <span>Заказы клиентов</span></div>
+        <h1 class="wiki-title">Заказы клиентов</h1>
+        <p class="wiki-text">Заказы, поступившие от клиентов. Каждый заказ имеет статус, сумму и источник. К заказу привязываются позиции (конкретные товары с количеством и ценой).</p>
+
+        <h2 class="wiki-h2">Статусы заказа</h2>
+        <table class="field-table">
+          <tr><th>Статус</th><th>Описание</th></tr>
+          <tr><td class="field-name">new</td><td class="desc-cell">Новый заказ, ещё не обработан</td></tr>
+          <tr><td class="field-name">processing</td><td class="desc-cell">Заказ в работе</td></tr>
+          <tr><td class="field-name">completed</td><td class="desc-cell">Заказ выполнен</td></tr>
+          <tr><td class="field-name">cancelled</td><td class="desc-cell">Заказ отменён</td></tr>
+        </table>
+
+        <h2 class="wiki-h2">Создание заказа</h2>
+        <div class="code-block">POST /api/client-orders
+Authorization: Bearer &lt;token&gt;
+Content-Type: application/json
+
+{
+  "order_number": "ORD-2024-001",
+  "status": "new",
+  "total_amount": 82500.00,
+  "source": "website"
+}</div>
+
+        <h2 class="wiki-h2">Добавление позиции в заказ</h2>
+        <div class="code-block">POST /api/client-order-items
+Authorization: Bearer &lt;token&gt;
+Content-Type: application/json
+
+{
+  "quantity": 1,
+  "price": 75000.00,
+  "assortment_id": 1,
+  "client_order_id": 1
+}</div>
+      </div>
+    </div>
+
+    <!-- SUPPLIER ORDERS -->
+    <div id="page-supplier-orders" class="page">
+      <div class="wiki-page">
+        <div class="wiki-meta">Справочник API · <span>Заказы поставщикам</span></div>
+        <h1 class="wiki-title">Заказы поставщикам</h1>
+        <p class="wiki-text">Управление закупками: создание заказов поставщикам, учёт позиций и фиксация факта поступления товаров на склад.</p>
+
+        <h2 class="wiki-h2">Создание заказа поставщику</h2>
+        <div class="code-block">POST /api/supplier-orders
+Authorization: Bearer &lt;token&gt;
+Content-Type: application/json
+
+{
+  "order_number": "SUP-2024-005",
+  "status": "new"
+}</div>
+
+        <h2 class="wiki-h2">Фиксация поступления товара</h2>
+        <p class="wiki-text">После получения товаров от поставщика создайте запись о поступлении:</p>
+        <div class="code-block">POST /api/received-goods
+Authorization: Bearer &lt;token&gt;
+Content-Type: application/json
+
+{
+  "invoice_number": "INV-2024-042",
+  "order_number": "SUP-2024-005",
+  "supplier_order_id": 5
+}</div>
+      </div>
+    </div>
+
+    <!-- PROMOTIONS -->
+    <div id="page-promotions" class="page">
+      <div class="wiki-page">
+        <div class="wiki-meta">Справочник API · <span>Акции</span></div>
+        <h1 class="wiki-title">Акции</h1>
+        <p class="wiki-text">Управление скидочными акциями. Акция имеет период действия и процент скидки. К акции привязываются конкретные товары со специальной ценой.</p>
+
+        <h2 class="wiki-h2">Поля объекта</h2>
+        <table class="field-table">
+          <tr><th>Поле</th><th>Тип</th><th>Обязательное</th><th>Описание</th></tr>
+          <tr><td class="field-name">name</td><td class="field-type">string</td><td class="field-req">да</td><td class="desc-cell">Название акции</td></tr>
+          <tr><td class="field-name">start_date</td><td class="field-type">date</td><td class="field-req">да</td><td class="desc-cell">Дата начала (YYYY-MM-DD)</td></tr>
+          <tr><td class="field-name">end_date</td><td class="field-type">date</td><td class="field-req">да</td><td class="desc-cell">Дата окончания (YYYY-MM-DD)</td></tr>
+          <tr><td class="field-name">discount_percent</td><td class="field-type">float</td><td class="field-opt">нет</td><td class="desc-cell">Процент скидки (0–100)</td></tr>
+          <tr><td class="field-name">conditions</td><td class="field-type">string</td><td class="field-opt">нет</td><td class="desc-cell">Условия акции</td></tr>
+        </table>
+
+        <h2 class="wiki-h2">Создание акции</h2>
+        <div class="code-block">POST /api/promotions
+Authorization: Bearer &lt;token&gt;
+Content-Type: application/json
+
+{
+  "name": "Летняя распродажа",
+  "start_date": "2024-06-01",
+  "end_date": "2024-06-30",
+  "discount_percent": 15.0,
+  "conditions": "На все товары категории Электроника"
+}</div>
+
+        <h2 class="wiki-h2">Добавление товара в акцию</h2>
+        <div class="code-block">POST /api/promotion-items
+Authorization: Bearer &lt;token&gt;
+Content-Type: application/json
+
+{
+  "assortment_id": 1,
+  "promotion_id": 1,
+  "special_price": 63750.00,
+  "notes": "Скидка 15%"
+}</div>
+      </div>
+    </div>
+
+    <!-- RETURNS -->
+    <div id="page-returns" class="page">
+      <div class="wiki-page">
+        <div class="wiki-meta">Справочник API · <span>Возвраты</span></div>
+        <h1 class="wiki-title">Возвраты</h1>
+        <p class="wiki-text">Оформление возвратов товаров от клиентов. Возврат может быть привязан к исходному заказу клиента.</p>
+
+        <h2 class="wiki-h2">Создание возврата</h2>
+        <div class="code-block">POST /api/returns
+Authorization: Bearer &lt;token&gt;
+Content-Type: application/json
+
+{
+  "return_number": "RET-2024-001",
+  "order_number": "ORD-2024-001",
+  "reason": "Товар не соответствует описанию",
+  "client_order_id": 1
+}</div>
+        <p class="wiki-text">Ответ <code class="code-inline">201 Created</code>:</p>
+        <div class="json-block">{
+  <span class="jk">"id"</span>: <span class="jn">1</span>,
+  <span class="jk">"return_number"</span>: <span class="js">"RET-2024-001"</span>,
+  <span class="jk">"return_date"</span>: <span class="js">"2024-04-12"</span>,
+  <span class="jk">"order_number"</span>: <span class="js">"ORD-2024-001"</span>,
+  <span class="jk">"reason"</span>: <span class="js">"Товар не соответствует описанию"</span>,
+  <span class="jk">"client_order_id"</span>: <span class="jn">1</span>
+}</div>
+      </div>
+    </div>
+
+    <!-- FEATURES -->
+    <div id="page-features" class="page">
+      <div class="wiki-page">
+        <div class="wiki-meta">Прочее · <span>Основные функции</span></div>
+        <h1 class="wiki-title">Основные функции</h1>
+
+        <h2 class="wiki-h2">1. Ролевые дашборды</h2>
+        <ul class="wiki-list">
+          <li><b>Специалист по закупкам</b> — видит истекающие товары, критически низкие остатки и рекомендации к закупке</li>
+          <li><b>Менеджер по клиентам</b> — видит заказы, ожидающие подтверждения, и товары для акций</li>
+          <li><b>Кладовщик</b> — видит ожидаемые поставки, заказы к сборке и просроченные товары</li>
+        </ul>
+
+        <h2 class="wiki-h2">2. Управление ассортиментом</h2>
+        <ul class="wiki-list">
+          <li>Ведение справочника товаров с ценами, категориями и артикулами</li>
+          <li>Отслеживание срока годности (<b>expiry_date</b>) и минимального остатка (<b>min_stock_level</b>)</li>
+          <li>Фильтрация: истекающие / низкий остаток / просроченные</li>
+          <li>График продаж за 6 месяцев для каждого товара</li>
+        </ul>
+
+        <h2 class="wiki-h2">3. Складской учёт и прогноз</h2>
+        <ul class="wiki-list">
+          <li>Учёт количества каждого товара с датой последнего обновления</li>
+          <li>Прогноз спроса на основе средних продаж за 3 месяца</li>
+          <li>Автоматические рекомендации по объёму закупки</li>
+        </ul>
+
+        <h2 class="wiki-h2">4. Управление заказами</h2>
+        <ul class="wiki-list">
+          <li>Заказы клиентов: статусы <b>new → confirmed → processing → completed / cancelled</b></li>
+          <li>Подтверждение и отклонение заказа одним запросом</li>
+          <li>Заказы поставщикам с указанием поставщика, даты доставки и условий</li>
+          <li>Привязка заказов к клиентам и поставщикам из справочников</li>
+        </ul>
+
+        <h2 class="wiki-h2">5. Акции и скидки</h2>
+        <ul class="wiki-list">
+          <li>Статусы акций: <b>active / inactive / expired</b></li>
+          <li>Автоматические предложения акций по товарам с истекающим сроком</li>
+          <li>Статистика акции: количество заказов и суммарная выручка</li>
+        </ul>
+
+        <h2 class="wiki-h2">6. Поставщики и клиенты</h2>
+        <ul class="wiki-list">
+          <li>Справочник поставщиков с контактной информацией</li>
+          <li>Справочник клиентов с поиском по имени и компании</li>
+          <li>Привязка к заказам для отслеживания истории</li>
+        </ul>
+
+        <h2 class="wiki-h2">7. Возвраты</h2>
+        <ul class="wiki-list">
+          <li>Оформление возврата с указанием причины и списка товаров</li>
+          <li>Привязка возврата к исходному заказу клиента</li>
+        </ul>
+
+        <h2 class="wiki-h2">8. Аутентификация и безопасность</h2>
+        <ul class="wiki-list">
+          <li>Регистрация с выбором роли: procurement_specialist / client_manager / warehouse_keeper</li>
+          <li>Пароли хранятся в виде bcrypt-хеша</li>
+          <li>Доступ к API защищён JWT-токенами</li>
+          <li>CORS настроен для React-фронтенда</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ERRORS -->
+    <div id="page-errors" class="page">
+      <div class="wiki-page">
+        <div class="wiki-meta">Прочее · <span>Коды ошибок</span></div>
+        <h1 class="wiki-title">Коды ошибок</h1>
+        <p class="wiki-text">Все ошибки возвращаются в формате JSON с полем <code class="code-inline">error</code>.</p>
+        <div class="json-block">{ <span class="jk">"error"</span>: <span class="js">"Описание ошибки"</span> }</div>
+
+        <table class="field-table">
+          <tr><th>Код</th><th>Причина</th><th>Типичная ошибка</th></tr>
+          <tr><td class="field-name">400</td><td class="desc-cell">Bad Request</td><td class="desc-cell">Неверное тело запроса или отсутствуют обязательные поля</td></tr>
+          <tr><td class="field-name">401</td><td class="desc-cell">Unauthorized</td><td class="desc-cell">Токен не предоставлен, истёк или невалиден</td></tr>
+          <tr><td class="field-name">403</td><td class="desc-cell">Forbidden</td><td class="desc-cell">Недостаточно прав (требуется роль admin)</td></tr>
+          <tr><td class="field-name">404</td><td class="desc-cell">Not Found</td><td class="desc-cell">Запись с указанным ID не найдена</td></tr>
+          <tr><td class="field-name">500</td><td class="desc-cell">Internal Server Error</td><td class="desc-cell">Ошибка базы данных или внутренняя ошибка сервера</td></tr>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sidebar a, .topbar-nav a').forEach(a => a.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (el) el.classList.add('active');
+}
+</script>
+</body>
+</html>
