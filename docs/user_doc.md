@@ -1,55 +1,37 @@
 # Warehouse API
 
-Серверная часть системы управления складом. Предоставляет REST API для работы с товарами, заказами, остатками, акциями и возвратами.
+## Описание приложения
 
-- Язык: Go  
-- Фреймворк: Gin  
-- База данных: PostgreSQL  
-- Аутентификация: JWT  
+Warehouse API — серверная часть системы управления складом. Предназначена для автоматизации учёта товаров, управления заказами, контроля остатков и взаимодействия с поставщиками и клиентами.
 
-Базовый URL:
-http://localhost:8080
-
-Все запросы и ответы — в формате JSON.
+Система предоставляет REST API, который может использоваться веб‑ или мобильным фронтендом.
 
 ---
 
-# Описание системы
+## Основные функции
 
-Warehouse API позволяет:
-
-- Вести ассортимент товаров
-- Учитывать остатки на складе
-- Обрабатывать заказы клиентов
-- Управлять закупками у поставщиков
-- Создавать акции
-- Оформлять возвраты
-- Работать с ролями пользователей
-
----
-
-# Архитектура
-
-Проект разделён на пакеты:
-
-- config — конфигурация (.env)
-- db — подключение к PostgreSQL
-- middleware — JWT
-- models — структуры данных
-- handlers — HTTP-обработчики
+- Управление ассортиментом товаров
+- Учёт остатков на складе
+- Обработка заказов клиентов
+- Формирование заказов поставщикам
+- Управление акциями и скидками
+- Оформление возвратов
+- Ролевая модель пользователей (admin, manager и т.д.)
+- JWT-аутентификация
 
 ---
 
-# Установка
+## Установка и требования
 
-## Требования
+### Требования
 
 - Go 1.21+
 - PostgreSQL 14+
 - Docker (опционально)
 
-## 1. База данных
+### Запуск базы данных
 
+```bash
 docker run -d \
   --name warehouse-db \
   -e POSTGRES_USER=warehouse \
@@ -57,91 +39,97 @@ docker run -d \
   -e POSTGRES_DB=warehouse_db \
   -p 5432:5432 \
   postgres:16
+```
 
 Применение схемы:
 
+```bash
 docker exec -i warehouse-db psql -U warehouse -d warehouse_db < schema.sql
+```
 
-## 2. Конфигурация
+### Конфигурация
 
-.env:
+Создать `.env`:
 
-DB_URL=postgres://warehouse:secretpassword@localhost:5432/warehouse_db  
-JWT_SECRET=your-secret-key  
-PORT=8080  
+```
+DB_URL=postgres://warehouse:secretpassword@localhost:5432/warehouse_db
+JWT_SECRET=your-secret-key
+PORT=8080
+```
 
-## 3. Запуск
+### Запуск сервера
 
-go mod download  
-go run main.go  
+```bash
+go mod download
+go run main.go
+```
 
-## 4. Проверка
+---
 
-curl http://localhost:8080/api/health  
+## Работа сервера
+
+После запуска сервер доступен по адресу:
+
+```
+http://localhost:8080
+```
+
+Проверка:
+
+```bash
+curl http://localhost:8080/api/health
+```
 
 Ответ:
 
+```json
 { "status": "ok" }
+```
+
+Сервер обрабатывает HTTP-запросы и возвращает JSON-ответы. Все защищённые эндпоинты требуют JWT-токен.
 
 ---
 
-# Аутентификация
+## Обзор интерфейса (логика API)
 
-Используется JWT.
+Система построена по REST-принципу. Основные группы эндпоинтов:
 
-## Регистрация
-
-POST /api/auth/register
-
-{
-  "email": "user@example.com",
-  "password": "secret123",
-  "first_name": "Иван",
-  "last_name": "Иванов",
-  "role": "procurement_specialist"
-}
-
-## Логин
-
-POST /api/auth/login
-
-## Использование токена
-
-Authorization: Bearer <token>
+- `/api/auth` — аутентификация
+- `/api/assortment` — товары
+- `/api/stock` — остатки
+- `/api/clients` — клиенты
+- `/api/suppliers` — поставщики
+- `/api/client-orders` — заказы клиентов
+- `/api/supplier-orders` — заказы поставщикам
+- `/api/promotions` — акции
+- `/api/returns` — возвраты
 
 ---
-
-# Роли
-
-| Роль | Описание |
-|------|---------|
-| procurement_specialist | Закупки |
-| client_manager | Работа с клиентами |
-| warehouse_keeper | Склад |
-| admin | Полный доступ |
-
----
-
-# Основные эндпоинты
 
 ## Аутентификация
 
-| Метод | URL |
-|------|-----|
-| POST | /api/auth/register |
-| POST | /api/auth/login |
+Используется JWT.
 
-## Ассортимент
+Заголовок:
+
+```
+Authorization: Bearer <token>
+```
+
+---
+
+## Пример эндпоинтов
+
+### Ассортимент
 
 | Метод | URL |
 |------|-----|
 | GET | /api/assortment |
-| GET | /api/assortment/:id |
 | POST | /api/assortment |
 | PUT | /api/assortment/:id |
 | DELETE | /api/assortment/:id |
 
-## Остатки
+### Остатки
 
 | Метод | URL |
 |------|-----|
@@ -149,25 +137,7 @@ Authorization: Bearer <token>
 | POST | /api/stock |
 | PUT | /api/stock/:id |
 
-## Клиенты
-
-| Метод | URL |
-|------|-----|
-| GET | /api/clients |
-| POST | /api/clients |
-| PUT | /api/clients/:id |
-| DELETE | /api/clients/:id |
-
-## Поставщики
-
-| Метод | URL |
-|------|-----|
-| GET | /api/suppliers |
-| POST | /api/suppliers |
-| PUT | /api/suppliers/:id |
-| DELETE | /api/suppliers/:id |
-
-## Заказы клиентов
+### Заказы клиентов
 
 | Метод | URL |
 |------|-----|
@@ -176,38 +146,15 @@ Authorization: Bearer <token>
 | PUT | /api/client-orders/:id |
 | DELETE | /api/client-orders/:id |
 
-## Заказы поставщикам
-
-| Метод | URL |
-|------|-----|
-| GET | /api/supplier-orders |
-| POST | /api/supplier-orders |
-| PUT | /api/supplier-orders/:id |
-| DELETE | /api/supplier-orders/:id |
-
-## Акции
-
-| Метод | URL |
-|------|-----|
-| GET | /api/promotions |
-| POST | /api/promotions |
-| PUT | /api/promotions/:id |
-| DELETE | /api/promotions/:id |
-
-## Возвраты
-
-| Метод | URL |
-|------|-----|
-| GET | /api/returns |
-| POST | /api/returns |
-| PUT | /api/returns/:id |
-| DELETE | /api/returns/:id |
-
 ---
 
-# Коды ошибок
+## Коды ошибок
 
+Все ошибки возвращаются в формате:
+
+```json
 { "error": "описание" }
+```
 
 | Код | Значение |
 |-----|---------|
@@ -219,6 +166,6 @@ Authorization: Bearer <token>
 
 ---
 
-# Примечание
+## Примечание
 
-Все эндпоинты, кроме /api/auth/* и /api/health, требуют JWT.
+Все эндпоинты, кроме `/api/auth/*` и `/api/health`, требуют JWT.
